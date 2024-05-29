@@ -1,6 +1,6 @@
 ---
 - name: Disable C-states
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/default/grub
     regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
     line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash intel_idle.max_cstate=0 processor.max_cstate=1"'
@@ -10,11 +10,13 @@
   ansible.builtin.command:
     cmd: powerprofilesctl get
   register: current_profile
+  changed_when: false
 
 - name: Set CPU profile to performance mode if not already set
   ansible.builtin.command:
     cmd: powerprofilesctl set balanced
   when: "'balanced' not in current_profile.stdout"
+  changed_when: false
 
 - name: Verify the CPU profile is set to performance
   ansible.builtin.debug:
@@ -22,16 +24,16 @@
   failed_when: "'balanced' not in current_profile.stdout"
 
 - name: Gather CPU facts
-  setup:
+  ansible.builtin.setup:
     filter: ansible_processor,ansible_processor_cores,ansible_processor_count,ansible_processor_threads_per_core
 
 - name: Check for Hyper-Threading (Intel) or SMT (AMD)
-  set_fact:
+  ansible.builtin.set_fact:
     hyperthreading_info: >
       {{ 'Enabled' if ansible_processor_threads_per_core | int > 1 else 'Disabled' }}
 
 - name: Display CPU list
-  debug:
+  ansible.builtin.debug:
     msg: >
       CPU Information:
       - Processor: {{ ansible_processor }}

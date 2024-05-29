@@ -1,4 +1,4 @@
 ---
 - name: Cpu
-  include_tasks: cpu.yml
+  ansible.builtin.include_tasks: cpu.yml
   tags: cpu
